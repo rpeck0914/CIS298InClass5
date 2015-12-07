@@ -13,11 +13,19 @@ public class Crime {
     private String mTitle;
     private Date mDate;
     private boolean mSolved;
+    private String mSuspect;
 
-    //Default constructor
+    //No parameter constructor. Generates a new UUID and then
+    //calls the single parameter constructor to create the new Crime
     public Crime() {
-        //Make a new unique id for this particular crime
-        mId = UUID.randomUUID();
+        //Make a new unique id for this particular crime and use the
+        //other constructor to get it created.
+        this(UUID.randomUUID());
+    }
+
+    //Single parameter constuctor that takes in a UUID an assigns it.
+    public Crime(UUID id) {
+        mId = id;
         mDate = new Date();
     }
 
@@ -50,5 +58,13 @@ public class Crime {
 
     public void setSolved(boolean solved) {
         mSolved = solved;
+    }
+
+    public String getSuspect() {
+        return mSuspect;
+    }
+
+    public void setSuspect(String suspect) {
+        this.mSuspect = suspect;
     }
 }
