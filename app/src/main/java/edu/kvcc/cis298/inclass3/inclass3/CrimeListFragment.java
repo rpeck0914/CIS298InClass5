@@ -1,12 +1,14 @@
 package edu.kvcc.cis298.inclass3.inclass3;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -38,6 +41,11 @@ public class CrimeListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        //This will make a new instance of the FetchCrimesTask private
+        //class. When the execute method gets called on it, the
+        //FetchCrimesTask will start the doInBackground method on a
+        //seperate thread automatically for us.
+        new FetchCrimesTask().execute();
     }
 
     @Nullable
@@ -281,5 +289,31 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
+    //Private class to do the networking that we need done on a seperate thread
+    private class FetchCrimesTask extends AsyncTask<Void, Void, Void> {
+        //This is the method that will be executed on the seperate thread
+        //Once it completes the onPostExecute method will be called automatically
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            //Create a new Crime Fetcher class and call the fetchCrimes method
+            //on the instance that is created.
+            new CrimeFetcher().fetchCrimes();
+            //Just return null for now.
+            return null;
+        }
+
+        //Method that will automatically get called when the code in
+        //doInBackgroud gets done executing.
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
 
 }
+
+
+
+
