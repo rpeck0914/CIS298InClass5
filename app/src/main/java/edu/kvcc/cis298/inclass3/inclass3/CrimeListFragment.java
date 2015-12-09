@@ -154,14 +154,25 @@ public class CrimeListFragment extends Fragment {
         //and set the Adapter for the Recycler view.
         if (mAdapter == null) {
 
+            //*Note: the following was used before we switched to
+            //getting our data from a networked service. We are now
+            //going to call a seperate method to do this work that
+            //can add a few extra checks about whether the adapter
+            //should be setup at this time.
+
+            //Call the new setupAdapter method that did the work
+            //that the below statements did + more.
+            setupAdapter();
+
             //Create a new crimeAdapter and send it over the list
             //of crimes. Crime adapter needs the list of crimes so
             //that it can work with the recyclerview to display them.
-            mAdapter = new CrimeAdapter(crimes);
+            //mAdapter = new CrimeAdapter(crimes);
 
             //Take the adapter that we just created, and set it as the
             //adapter that the recycler view is going to use.
-            mCrimeRecyclerView.setAdapter(mAdapter);
+            //mCrimeRecyclerView.setAdapter(mAdapter);
+
 
         //Else, the adapter already exists, so we just need to notify
         //that the data set might have changed. This will
@@ -172,6 +183,19 @@ public class CrimeListFragment extends Fragment {
 
         updateSubtitle();
 
+    }
+
+    //Method to set the adapter for the recycler view.
+    private void setupAdapter() {
+        //Check to see if the recycler view has been added to the fragment
+        if (isAdded()) {
+            //Get a reference to the CrimeLab
+            CrimeLab lab = CrimeLab.get(getActivity());
+            //Create a new adapter sending in the crimes list
+            mAdapter = new CrimeAdapter(lab.getCrimes());
+            //Set the adapter on the recycler view.
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        }
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -290,24 +314,32 @@ public class CrimeListFragment extends Fragment {
     }
 
     //Private class to do the networking that we need done on a seperate thread
-    private class FetchCrimesTask extends AsyncTask<Void, Void, Void> {
+    private class FetchCrimesTask extends AsyncTask<Void, Void, List<Crime>> {
         //This is the method that will be executed on the seperate thread
         //Once it completes the onPostExecute method will be called automatically
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected List<Crime> doInBackground(Void... voids) {
 
             //Create a new Crime Fetcher class and call the fetchCrimes method
             //on the instance that is created.
-            new CrimeFetcher().fetchCrimes();
-            //Just return null for now.
-            return null;
+            return new CrimeFetcher().fetchCrimes();
         }
 
         //Method that will automatically get called when the code in
         //doInBackgroud gets done executing.
+        //The parameter that is passed into this method is the same as
+        //the variable that is returned from the doInBackgroud method.
+        //doInBackgrounds return = onPostExecutes method parameter.
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(List<Crime> crimes) {
+            //Get a reference to the crime lab
+            CrimeLab lab = CrimeLab.get(getActivity());
+            //Use the setter setCrimes to set the crimes to the passed in
+            //crimes
+            lab.setCrimes(crimes);
+            //Now that we know that we have a data source, we can setup
+            //the adapter for the recycler view.
+            setupAdapter();
         }
     }
 
